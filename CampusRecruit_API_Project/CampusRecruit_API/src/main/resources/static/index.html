@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Campus Recruitment Dashboard</title>
+<style>
+body { font-family: Arial, sans-serif; margin: 0; background: #f4f6f9; transition: 0.3s; }
+h1 { text-align: center; margin-top: 20px; }
+nav { display: flex; justify-content: center; background: #007bff; color: white; }
+nav button { padding: 10px 20px; margin: 5px; border: none; cursor: pointer; background: transparent; color: white; font-size: 16px; }
+nav button.active { border-bottom: 3px solid yellow; }
+.container { max-width: 1100px; margin: auto; padding: 20px; }
+.section { display: none; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); margin-top: 20px; }
+.section.active { display: block; }
+input, select, textarea { padding: 8px; margin: 5px; border-radius: 5px; border: 1px solid #ccc; width: 100%; box-sizing: border-box; }
+button.save { background: #28a745; color: white; }
+button.clear { background: #dc3545; color: white; margin-left: 5px; }
+table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+th, td { padding: 10px; border-bottom: 1px solid #ddd; text-align: center; }
+th { background: #007bff; color: white; cursor: pointer; }
+tr:hover { background: #f1f1f1; }
+.dark-mode { background: #121212; color: white; }
+.dark-mode .section { background: #1e1e1e; }
+.dark-mode th { background: #333; }
+</style>
+</head>
+<body>
+
+<h1>🎓 Campus Recruitment System</h1>
+<div style="text-align:center;">
+<button onclick="toggleDarkMode()">🌙 Dark Mode</button>
+</div>
+
+<nav>
+    <button class="tab-btn active" onclick="openTab('login')">Login</button>
+    <button class="tab-btn" onclick="openTab('students')">Students</button>
+    <button class="tab-btn" onclick="openTab('jobs')">Job Postings</button>
+    <button class="tab-btn" onclick="openTab('applications')">Job Applications</button>
+    <button class="tab-btn" onclick="openTab('interviews')">Interviews</button>
+    <button class="tab-btn" onclick="openTab('reports')">Reports</button>
+</nav>
+
+<div class="container">
+
+<!-- LOGIN -->
+<div id="login" class="section active">
+    <h3>Login</h3>
+    <input type="email" id="loginUsername" placeholder="Email">
+    <input type="password" id="loginPassword" placeholder="Password">
+    <select id="loginRole">
+        <option value="USER">User</option>
+        <option value="STUDENT">Student</option>
+    </select>
+    <button class="save" onclick="login()">Login</button>
+</div>
+
+<!-- STUDENTS -->
+<div id="students" class="section">
+    <h3>Students</h3>
+    <input type="text" id="studentName" placeholder="Name">
+    <input type="email" id="studentEmail" placeholder="Email">
+    <input type="text" id="studentContact" placeholder="Contact">
+    <input type="text" id="studentDept" placeholder="Department">
+    <input type="text" id="studentYear" placeholder="Graduation Year">
+    <button class="save" onclick="saveStudent()">Save</button>
+    <button class="clear" onclick="clearStudentForm()">Clear</button>
+    <table>
+        <thead>
+            <tr><th>Name</th><th>Email</th><th>Contact</th><th>Department</th><th>Year</th><th>Actions</th></tr>
+        </thead>
+        <tbody id="studentTable"></tbody>
+    </table>
+</div>
+
+<!-- JOB POSTINGS -->
+<div id="jobs" class="section">
+    <h3>Job Postings</h3>
+    <input type="text" id="jobTitle" placeholder="Job Title">
+    <input type="text" id="companyName" placeholder="Company Name">
+    <textarea id="jobDesc" placeholder="Job Description"></textarea>
+    <input type="text" id="jobLocation" placeholder="Location">
+    <input type="text" id="eligibility" placeholder="Eligibility">
+    <button class="save" onclick="saveJob()">Save</button>
+    <button class="clear" onclick="clearJobForm()">Clear</button>
+    <table>
+        <thead>
+            <tr><th>Job Title</th><th>Company</th><th>Location</th><th>Eligibility</th><th>Actions</th></tr>
+        </thead>
+        <tbody id="jobTable"></tbody>
+    </table>
+</div>
+
+<!-- JOB APPLICATIONS -->
+<div id="applications" class="section">
+    <h3>Job Applications</h3>
+    <select id="appStudent"></select>
+    <select id="appJob"></select>
+    <button class="save" onclick="saveApplication()">Apply</button>
+    <table>
+        <thead>
+            <tr><th>Student</th><th>Job</th><th>Status</th><th>Actions</th></tr>
+        </thead>
+        <tbody id="applicationTable"></tbody>
+    </table>
+</div>
+
+<!-- INTERVIEWS -->
+<div id="interviews" class="section">
+    <h3>Interviews</h3>
+    <select id="interviewStudent"></select>
+    <input type="date" id="interviewDate">
+    <select id="interviewStatus">
+        <option value="SCHEDULED">SCHEDULED</option>
+        <option value="COMPLETED">COMPLETED</option>
+        <option value="CANCELLED">CANCELLED</option>
+    </select>
+    <button class="save" onclick="saveInterview()">Schedule</button>
+    <table>
+        <thead>
+            <tr><th>Student</th><th>Date</th><th>Status</th><th>Actions</th></tr>
+        </thead>
+        <tbody id="interviewTable"></tbody>
+    </table>
+</div>
+
+<!-- INTERACTIVE REPORTS -->
+<div id="reports" class="section">
+    <h3>Interactive Reports</h3>
+    <button onclick="loadInteractiveReports()">Load Data</button>
+
+    <h4>Students</h4>
+    <input type="text" id="searchStudents" placeholder="Search Students..." onkeyup="filterTable('studentTableReport','searchStudents')">
+    <table id="studentTableReport">
+        <thead>
+            <tr><th>Name</th><th>Email</th><th>Contact</th><th>Department</th><th>Year</th></tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+
+    <h4>Jobs</h4>
+    <input type="text" id="searchJobs" placeholder="Search Jobs..." onkeyup="filterTable('jobTableReport','searchJobs')">
+    <table id="jobTableReport">
+        <thead>
+            <tr><th>Title</th><th>Company</th><th>Location</th><th>Eligibility</th></tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+
+    <h4>Applications</h4>
+    <input type="text" id="searchApplications" placeholder="Search Applications..." onkeyup="filterTable('applicationTableReport','searchApplications')">
+    <table id="applicationTableReport">
+        <thead>
+            <tr><th>Student</th><th>Job</th><th>Status</th></tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+
+    <h4>Interviews</h4>
+    <input type="text" id="searchInterviews" placeholder="Search Interviews..." onkeyup="filterTable('interviewTableReport','searchInterviews')">
+    <table id="interviewTableReport">
+        <thead>
+            <tr><th>Student</th><th>Date</th><th>Status</th></tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+</div>
+
+</div>
+
+<script>
+const BASE_URL = "http://localhost:8092"; // backend URL
+let token = "";
+
+// TAB FUNCTION
+function openTab(tab){
+    document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+    document.getElementById(tab).classList.add('active');
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+    document.querySelector(`[onclick="openTab('${tab}')"]`).classList.add('active');
+    if(tab!=="login") populateSelects();
+}
+
+// DARK MODE
+function toggleDarkMode(){
+    document.body.classList.toggle("dark-mode");
+}
+
+// LOGIN
+function login(){
+    const username=document.getElementById("loginUsername").value;
+    const password=document.getElementById("loginPassword").value;
+    const role=document.getElementById("loginRole").value;
+    const endpoint = role==="USER"?"/auth/user-login":"/auth/student-login";
+    fetch(BASE_URL+endpoint,{
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body: JSON.stringify({username,password})
+    }).then(r=>r.json()).then(data=>{
+        if(data.token){ token=data.token; alert("Login Successful!"); openTab("students"); }
+        else alert("Invalid Credentials");
+    });
+}
+
+// POPULATE SELECTS
+function populateSelects(){
+    fetch(BASE_URL+"/students/allStudents").then(r=>r.json()).then(s=>{
+        const studentSelect=document.getElementById("appStudent");
+        const interviewSelect=document.getElementById("interviewStudent");
+        studentSelect.innerHTML=""; interviewSelect.innerHTML="";
+        s.forEach(st=>{ studentSelect.innerHTML+=`<option value="${st.id}">${st.name}</option>`; interviewSelect.innerHTML+=`<option value="${st.id}">${st.name}</option>`; });
+        renderStudentTable(s);
+    });
+    fetch(BASE_URL+"/job-postings/allJobs").then(r=>r.json()).then(j=>{
+        const jobSelect=document.getElementById("appJob");
+        jobSelect.innerHTML="";
+        j.forEach(job=>{ jobSelect.innerHTML+=`<option value="${job.id}">${job.jobTitle}</option>`; });
+        renderJobTable(j);
+    });
+    fetch(BASE_URL+"/jobApplication/all").then(r=>r.json()).then(a=>renderApplicationTable(a));
+    fetch(BASE_URL+"/interviews/allInterviews").then(r=>r.json()).then(i=>renderInterviewTable(i));
+}
+
+// STUDENTS
+function saveStudent(){
+    const student={
+        name: document.getElementById("studentName").value,
+        email: document.getElementById("studentEmail").value,
+        contactNumber: document.getElementById("studentContact").value,
+        department: document.getElementById("studentDept").value,
+        graduationYear: document.getElementById("studentYear").value
+    };
+    fetch(BASE_URL+"/students/register",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(student)})
+    .then(r=>r.text()).then(m=>{alert(m); populateSelects(); clearStudentForm();});
+}
+function renderStudentTable(data){
+    const tbody=document.getElementById("studentTable"); tbody.innerHTML="";
+    data.forEach(s=>{ tbody.innerHTML+=`<tr><td>${s.name}</td><td>${s.email}</td><td>${s.contactNumber}</td><td>${s.department}</td><td>${s.graduationYear}</td><td><button onclick="deleteStudent(${s.id})">Delete</button></td></tr>`});
+}
+function deleteStudent(id){ fetch(BASE_URL+"/students/deleteStudent/"+id,{method:"DELETE"}).then(r=>r.text()).then(m=>{alert(m); populateSelects();}); }
+function clearStudentForm(){ ["studentName","studentEmail","studentContact","studentDept","studentYear"].forEach(id=>document.getElementById(id).value=""); }
+
+// JOBS
+function saveJob(){ 
+    const job={jobTitle:document.getElementById("jobTitle").value,companyName:document.getElementById("companyName").value,jobDescription:document.getElementById("jobDesc").value,jobLocation:document.getElementById("jobLocation").value,eligibilityCriteria:document.getElementById("eligibility").value};
+    fetch(BASE_URL+"/job-postings/createJob",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(job)}).then(r=>r.text()).then(m=>{alert(m); populateSelects(); clearJobForm();});
+}
+function renderJobTable(data){
+    const tbody=document.getElementById("jobTable"); tbody.innerHTML="";
+    data.forEach(j=>{tbody.innerHTML+=`<tr><td>${j.jobTitle}</td><td>${j.companyName}</td><td>${j.jobLocation}</td><td>${j.eligibilityCriteria}</td><td><button onclick="deleteJob(${j.id})">Delete</button></td></tr>`});
+}
+function deleteJob(id){ fetch(BASE_URL+"/job-postings/deleteJob/"+id,{method:"DELETE"}).then(r=>r.text()).then(m=>{alert(m); populateSelects();}); }
+function clearJobForm(){ ["jobTitle","companyName","jobDesc","jobLocation","eligibility"].forEach(id=>document.getElementById(id).value=""); }
+
+// APPLICATIONS
+function saveApplication(){
+    const studentId=document.getElementById("appStudent").value;
+    const jobId=document.getElementById("appJob").value;
+    fetch(BASE_URL+"/jobApplication/apply",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({studentId,jobPostingId:jobId})})
+    .then(r=>r.text()).then(m=>{alert(m); populateSelects();});
+}
+function renderApplicationTable(data){
+    const tbody=document.getElementById("applicationTable"); tbody.innerHTML="";
+    data.forEach(a=>{
+        tbody.innerHTML+=`<tr><td>${a.studentId}</td><td>${a.jobPostingId}</td><td>${a.status}</td><td><button onclick="deleteApplication(${a.id})">Delete</button></td></tr>`;
+    });
+}
+function deleteApplication(id){ fetch(BASE_URL+"/jobApplication/delete/"+id,{method:"DELETE"}).then(r=>r.text()).then(m=>{alert(m); populateSelects();}); }
+
+// INTERVIEWS
+function saveInterview(){
+    const studentId=document.getElementById("interviewStudent").value;
+    const date=document.getElementById("interviewDate").value;
+    const status=document.getElementById("interviewStatus").value;
+    fetch(BASE_URL+"/interviews/scheduleInterview",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({studentId,interviewDate:date,interviewStatus:status})}).then(r=>r.text()).then(m=>{alert(m); populateSelects();});
+}
+function renderInterviewTable(data){
+    const tbody=document.getElementById("interviewTable"); tbody.innerHTML="";
+    data.forEach(i=>{tbody.innerHTML+=`<tr><td>${i.studentId}</td><td>${i.interviewDate}</td><td>${i.interviewStatus}</td><td><button onclick="deleteInterview(${i.id})">Delete</button></td></tr>`});
+}
+function deleteInterview(id){ fetch(BASE_URL+"/interviews/cancelInterview/"+id,{method:"DELETE"}).then(r=>r.text()).then(m=>{alert(m); populateSelects();}); }
+
+// INTERACTIVE REPORTS
+function loadInteractiveReports(){
+    Promise.all([
+        fetch(BASE_URL+"/students/allStudents").then(r=>r.json()),
+        fetch(BASE_URL+"/job-postings/allJobs").then(r=>r.json()),
+        fetch(BASE_URL+"/jobApplication/all").then(r=>r.json()),
+        fetch(BASE_URL+"/interviews/allInterviews").then(r=>r.json())
+    ]).then(([students,jobs,applications,interviews])=>{
+        renderReportTable('studentTableReport', students, ['name','email','contactNumber','department','graduationYear']);
+        renderReportTable('jobTableReport', jobs, ['jobTitle','companyName','jobLocation','eligibilityCriteria']);
+        renderReportTable('applicationTableReport', applications, ['studentName','jobTitle','status']);
+        renderReportTable('interviewTableReport', interviews, ['studentName','interviewDate','interviewStatus']);
+    });
+}
+
+function renderReportTable(tableId, data, columns){
+    const tbody = document.getElementById(tableId).querySelector('tbody');
+    tbody.innerHTML = '';
+    data.forEach(item=>{
+        let tr = '<tr>';
+        columns.forEach(col=>{
+            tr += `<td>${item[col] || ''}</td>`;
+        });
+        tr += '</tr>';
+        tbody.innerHTML += tr;
+    });
+}
+
+function filterTable(tableId, searchInputId){
+    const input = document.getElementById(searchInputId).value.toLowerCase();
+    const rows = document.getElementById(tableId).querySelectorAll('tbody tr');
+    rows.forEach(row=>{
+        const text = row.innerText.toLowerCase();
+        row.style.display = text.includes(input) ? '' : 'none';
+    });
+}
+</script>
+</body>
+</html>
